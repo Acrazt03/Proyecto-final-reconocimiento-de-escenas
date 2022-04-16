@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="imagen">
+    <file>logo-policia.png</file>
+  </qresource>
+</RCC>
