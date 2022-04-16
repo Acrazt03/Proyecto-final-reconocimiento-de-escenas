@@ -1,6 +1,7 @@
 import asyncio
 import io
 import glob
+
 import os
 import sys
 import time
@@ -16,15 +17,23 @@ from msrest.authentication import CognitiveServicesCredentials
 from azure.cognitiveservices.vision.face.models import TrainingStatusType, Person, QualityForRecognition
 
 class PersonGroup:
-  def __init__(self, face_client, name, detection_model="detection_03", recognition_model="recognition_04"):
+  def __init__(self, face_client, name, detection_model="detection_03", recognition_model="recognition_04",PERSON_GROUP_ID=None):
+    
     self.face_client = face_client
     self.name = name
-    #self.PERSON_GROUP_ID = str(uuid.uuid4()) # assign a random ID (or name it anything)
-    self.PERSON_GROUP_ID = "6129c084-32d8-4809-937f-e6bc66d2c99a"
     self.recognition_model = recognition_model
     self.detection_model = detection_model
+
+    if(PERSON_GROUP_ID): #PARA INFERENCIA
+      self.PERSON_GROUP_ID = PERSON_GROUP_ID
+      #self.face_client.person_group.create(person_group_id=self.PERSON_GROUP_ID, name=self.name, recognition_model=self.recognition_model)
+      #self.face_client.person_group.get(self.PERSON_GROUP_ID)
+      #print(self.face_client.person_group)
+    else: #PARA ENTRENAMIENTO
+      self.PERSON_GROUP_ID = str(uuid.uuid4()) # assign a random ID (or name it anything)
+      self.face_client.person_group.create(person_group_id=self.PERSON_GROUP_ID, name=self.name, recognition_model=self.recognition_model)
+
     print('Person group:', self.PERSON_GROUP_ID)
-    #self.face_client.person_group.create(person_group_id=self.PERSON_GROUP_ID, name=self.name, recognition_model=self.recognition_model)
     self.persons = []
   
   def addPersons(self, _persons): #persons es una lista de nombres
@@ -46,10 +55,11 @@ class PersonGroup:
       return None
 
     for face in faces:
-      img = open(face, 'r+b')
-      print(face)
-      self.face_client.person_group_person.add_face_from_stream(self.PERSON_GROUP_ID, personToModify.person_id, img)
-  
+      try:
+        self.face_client.person_group_person.add_face_from_url(self.PERSON_GROUP_ID, personToModify.person_id, face)
+      except:
+        print("La imagen no posee una cara reconocible, será ignorada")
+
   def train(self):
     '''
     Train PersonGroup
@@ -72,8 +82,8 @@ class PersonGroup:
   
   def identifyPerson(self, image):
     print('Pausing for 60 seconds to avoid triggering rate limit on free account...')
-    time.sleep (10)
-
+    #time.sleep (10)
+    #print("tiempo paso")
     # Detect faces
     self.face_ids = []
     # We use detection model 3 to get better performance, recognition model 4 to support quality for recognition attribute.
@@ -85,18 +95,36 @@ class PersonGroup:
 
     # Identify faces
     self.results = self.face_client.face.identify(self.face_ids, self.PERSON_GROUP_ID)
-    print('Identifying faces in {}'.format(os.path.basename(image.name)))
-    if not self.results:
-        print('No person identified in the person group for faces from {}.'.format(os.path.basename(image.name)))
-    for person in self.results:
-        if len(person.candidates) > 0:
-            print("El de la imagen es: " + self.personToName(person.candidates[0].person_id))
-            print('Person for face ID {} is identified in {} with a confidence of {}.'.format(person.face_id, os.path.basename(image.name), person.candidates[0].confidence)) # Get topmost confidence score
-        else:
-            print('No person identified for face ID {} in {}.'.format(person.face_id, os.path.basename(image.name)))
-      
+    #print('Identifying faces in {}'.format(os.path.basename(image.name)))
+    #if not self.results:
+        #print('No person identified in the person group for faces from {}.'.format(os.path.basename(image.name)))
+    for personaIdentificada in self.results:
+      #print("El de la imagen es: " + self.personToName(person.candidates[0].person_id))
+      #print('Person for face ID {} is identified in {} with a confidence of {}.'.format(personaIdentificada.face_id, os.path.basename(image.name), personaIdentificada.candidates[0].confidence)) # Get topmost confidence score
+      if len(personaIdentificada.candidates) <= 0:
+        print('No person identified for face ID {} in {}.'.format(personaIdentificada.face_id, os.path.basename(image.name)))
+    
+    persons = self.face_client.person_group_person.list(self.PERSON_GROUP_ID)
+    
+    for personaIdentificada in self.results:
+        if len(personaIdentificada.candidates) > 0:
+          for person in persons:
+            person_id = person.person_id
+            try:
+              result = self.face_client.face.verify_face_to_person(face_id=personaIdentificada.face_id,person_id=person_id,person_group_id=self.PERSON_GROUP_ID)
+              if(result.is_identical):
+                return [person.name, result.confidence]
+            except:
+              print(person.name + " no es el de la imagen")
+    
+    return None
+  
   def personToName(self, person):
     for saved_person in self.persons:
       if(saved_person[1].person_id == person):
         return saved_person[0]
     return None
+
+  def save(self):
+    file = open("trained_model_id.txt", "w+")
+    file.write(self.PERSON_GROUP_ID)

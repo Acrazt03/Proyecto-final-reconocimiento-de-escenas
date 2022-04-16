@@ -12,7 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_MainWindow(object):
-    def setupUi(self, MainWindow, cargar_imagen_funcion):
+    def setupUi(self, MainWindow, cargar_imagen_funcion, hacer_consulta_funcion,generar_reporte_funcion):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(685, 302)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
@@ -30,6 +30,9 @@ class Ui_MainWindow(object):
         self.GenerarReporteBtn = QtWidgets.QPushButton(self.centralwidget)
         self.GenerarReporteBtn.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.GenerarReporteBtn.setObjectName("GenerarReporteBtn")
+
+        self.GenerarReporteBtn.clicked.connect(generar_reporte_funcion)
+
         self.gridLayout.addWidget(self.GenerarReporteBtn, 1, 3, 1, 1)
         self.Foto2 = QtWidgets.QLabel(self.centralwidget)
         self.Foto2.setStyleSheet("background-image: url(download.png);")
@@ -46,11 +49,17 @@ class Ui_MainWindow(object):
         self.Foto1.setPixmap(QtGui.QPixmap("download.png"))
         self.Foto1.setScaledContents(True)
         self.Foto1.setObjectName("Foto1")
+
+        self.Imagen1Cargada = False
+
         self.horizontalLayout.addWidget(self.Foto1)
         self.gridLayout.addLayout(self.horizontalLayout, 0, 0, 1, 1)
         self.HacerConsultaBtn = QtWidgets.QPushButton(self.centralwidget)
         self.HacerConsultaBtn.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.HacerConsultaBtn.setObjectName("HacerConsultaBtn")
+        
+        self.HacerConsultaBtn.clicked.connect(hacer_consulta_funcion)
+
         self.gridLayout.addWidget(self.HacerConsultaBtn, 1, 2, 1, 1)
         self.CargarImagenBtn = QtWidgets.QPushButton(self.centralwidget)
         self.CargarImagenBtn.setStyleSheet("background-color: rgb(255, 255, 255);")
@@ -131,8 +140,20 @@ class Ui_MainWindow(object):
         self.label_10.setText(_translate("MainWindow", "Edad:"))
 
     def cargar_foto1(self, image_path):
+        self.Imagen1Cargada = True
+        self.RutaFoto1 = image_path
         self.Foto1.setStyleSheet("background-image: url("+image_path+");")
         self.Foto1.setPixmap(QtGui.QPixmap(image_path))
+    
+    def cargar_foto2(self, imagen):
+        self.Imagen2Cargada = True
+        self.RutaFoto2 = "foto2.jpg"
+
+        # 3. Open the response into a new file called instagram.ico
+        open(self.RutaFoto2, "wb").write(imagen.content)
+
+        self.Foto2.setStyleSheet("background-image: url("+self.RutaFoto2+");")
+        self.Foto2.setPixmap(QtGui.QPixmap(self.RutaFoto2))
         
 #import blank person image_rc
 
