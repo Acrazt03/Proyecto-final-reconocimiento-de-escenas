@@ -109,7 +109,7 @@ class Ui_Login_window(object):
     def getUsernamePassword(self):
         username = self.Username_textbox.text()
         password = self.password_textbox.text()
-        print(password)
+        #print(password)
         return (username,password)
 
     def retranslateUi(self, Login_window):

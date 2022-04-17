@@ -33,7 +33,7 @@ class PersonGroup:
       self.PERSON_GROUP_ID = str(uuid.uuid4()) # assign a random ID (or name it anything)
       self.face_client.person_group.create(person_group_id=self.PERSON_GROUP_ID, name=self.name, recognition_model=self.recognition_model)
 
-    print('Person group:', self.PERSON_GROUP_ID)
+    #print('Person group:', self.PERSON_GROUP_ID)
     self.persons = []
   
   def addPersons(self, _persons): #persons es una lista de nombres
@@ -81,7 +81,7 @@ class PersonGroup:
         time.sleep(5)
   
   def identifyPerson(self, image):
-    print('Pausing for 60 seconds to avoid triggering rate limit on free account...')
+    #print('Pausing for 60 seconds to avoid triggering rate limit on free account...')
     #time.sleep (10)
     #print("tiempo paso")
     # Detect faces

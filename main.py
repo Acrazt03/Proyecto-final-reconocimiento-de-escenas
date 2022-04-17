@@ -38,7 +38,7 @@ class Conexion():
             self.password = ast.literal_eval(lines[3])[0]
             self.driver = ast.literal_eval(lines[4])[0]
 
-            print(self.server,self.password)
+            #print(self.server,self.password)
         else:
             print("Credenciales no validas")
 
@@ -56,34 +56,31 @@ class Conexion():
         self.cursor = self.conn.cursor()
         
         self.cursor.execute("SELECT TOP (1000) [usuario],[contraseña]  FROM [dbo].[PN_admin]")
-        row = self.cursor.fetchone()
-        while row:
-            print (str(row[0]) + " " + str(row[1]))
-            row = self.cursor.fetchone()
+        
+        #row = self.cursor.fetchone()
+        #while row:
+        #    print (str(row[0]) + " " + str(row[1]))
+        #    row = self.cursor.fetchone()
 
     def VerificarLogin(self,username, password):
 
-        #cargar_ventana_consulta() #DEBUGING
-
         credenciales = self.RunQuery("SELECT * FROM [dbo].[PN_admin] WHERE usuario='" + username + "';")
-        
+
         if(not credenciales):
             print("Credenciales invalidas")
             return
 
         if(len(credenciales)==2 and credenciales[1] == password):
-            print("YEAH")
             cargar_ventana_consulta()
         else:
             print("Credenciales invalidas")
 
-        while credenciales:
-            print (str(credenciales[0]) + " " + str(credenciales[1]))
-            credenciales = self.cursor.fetchone()
+        #while credenciales:
+        #    print (str(credenciales[0]) + " " + str(credenciales[1]))
+        #    credenciales = self.cursor.fetchone()
 
 
 def login():
-    print("boton clickeado")
     credenciales = ui0.getUsernamePassword()
     if(credenciales[0]=='' or credenciales[1] == ''):
         print("Credenciales no validas")
@@ -105,7 +102,6 @@ def cargar_imagen():
     root.withdraw()
 
     file_path = filedialog.askopenfilename()
-    print(file_path)
 
     ui1.cargar_foto1(file_path)
 
@@ -114,7 +110,6 @@ def hacer_consulta():
         print("Consultar!")
         foto = open(ui1.RutaFoto1,'r+b')
         personaIdentificada = azure_conn.psGroup.identifyPerson(foto)
-        print(personaIdentificada)
         if(personaIdentificada):
             mostrarDatos(personaIdentificada)
     else:
@@ -164,7 +159,6 @@ def mostrarDatos(personaIdentificada):
     azure_conn.ConsultaHecha = True
     ui1.cargar_foto2(imagen)
 
-    print(datosPersona)
     azure_conn.datosPersona = datosPersona
 
 def GenerarReporte():
@@ -187,9 +181,11 @@ class Azure_conexion():
         personGroup_ID = file.readlines()[0]
 
         self.faceclient = FaceClient(ENDPOINT, CognitiveServicesCredentials(KEY))
-        list_ps = self.faceclient.person_group.list()
-        for ps in list_ps:
-            print(ps)
+        
+        #list_ps = self.faceclient.person_group.list()
+        #for ps in list_ps:
+        #    print(ps)
+
         self.psGroup = PersonGroup(self.faceclient, name="Individuos", PERSON_GROUP_ID=personGroup_ID)
     
 
